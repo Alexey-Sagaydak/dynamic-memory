@@ -10,29 +10,29 @@ void print_menu() {
 }
 
 void run() {
-  abonent abonents[N];
-  int choice;
+  abonent* abonents = NULL;
+  int choice, size = 0;
 
-  init_abonents(abonents);
   do {
     print_menu();
     scanf("%d", &choice);
 
     switch (choice) {
       case 1:
-        add_abonent(abonents);
+        add_abonent(&abonents, &size);
         break;
       case 2:
-        delete_abonent(abonents);
+        delete_abonent(&abonents, &size);
         break;
       case 3:
-        find_abonent(abonents);
+        find_abonent(abonents, size);
         break;
       case 4:
-        print_abonents(abonents);
+        print_abonents(abonents, size);
         break;
       case 5:
         printf("Выходим...\n");
+        free_memory(&abonents);
         break;
 
       default:
@@ -42,50 +42,50 @@ void run() {
   } while (choice != 5);
 }
 
-void init_abonents(abonent* abonents) {
-  for (int i = 0; i < N; i++) {
-    abonents[i].name[0] = '\0';
-    abonents[i].second_name[0] = '\0';
-    abonents[i].tel[0] = '\0';
+void realloc_memory(abonent** abonents, const int new_size) {
+  abonent* temp = (abonent*)realloc(*abonents, new_size * sizeof(abonent));
+  if (temp != NULL || (temp == NULL && new_size == 0)) {
+    *abonents = temp;
+  } else {
+    printf("Ошибка при выделении памяти\n");
+    free_memory(abonents);
   }
 }
 
-int find_free_index(abonent* abonents) {
-  for (int i = 0; i < N; i++) {
-    if (abonents[i].name[0] == '\0') {
-      return i;
-    }
-  }
-  return -1;
+void free_memory(abonent** abonents) {
+  free(*abonents);
+  *abonents = NULL;
 }
 
-void add_abonent(abonent* abonents) {
-  int index = find_free_index(abonents);
-  if (index == -1) {
-    printf("Справочник переполнен. Невозможно добавить нового абонента.\n");
+void add_abonent(abonent** abonents, int* size) {
+  realloc_memory(abonents, ++(*size));
+  if (*abonents == NULL)
     return;
-  }
 
   printf("Введите имя: ");
-  scanf("%9s", abonents[index].name);
+  scanf("%9s", (*abonents)[*size - 1].name);
   printf("Введите фамилию: ");
-  scanf("%9s", abonents[index].second_name);
+  scanf("%9s", (*abonents)[*size - 1].second_name);
   printf("Введите номер телефона: ");
-  scanf("%9s", abonents[index].tel);
+  scanf("%9s", (*abonents)[*size - 1].tel);
 
   printf("Абонент добавлен.\n");
 }
 
-void delete_abonent(abonent* abonents) {
+void delete_abonent(abonent** abonents, int* size) {
   char name[10];
   printf("Введите имя абонента для удаления: ");
   scanf("%9s", name);
 
-  for (int i = 0; i < N; i++) {
-    if (strcmp(abonents[i].name, name) == 0) {
-      abonents[i].name[0] = '\0';
-      abonents[i].second_name[0] = '\0';
-      abonents[i].tel[0] = '\0';
+  for (int i = 0; i < *size; i++) {
+    if (strcmp((*abonents)[i].name, name) == 0) {
+      for (int j = i; j < *size - 1; j++) {
+        (*abonents)[j] = (*abonents)[j + 1];
+      }
+      realloc_memory(abonents, --(*size));
+      if (*abonents == NULL)
+        return;
+
       printf("Абонент удален.\n");
       return;
     }
@@ -93,13 +93,13 @@ void delete_abonent(abonent* abonents) {
   printf("Абонент с таким именем не найден.\n");
 }
 
-void find_abonent(abonent* abonents) {
+void find_abonent(abonent* abonents, const int size) {
   char name[10];
   printf("Введите имя для поиска: ");
   scanf("%9s", name);
 
   int found = 0;
-  for (int i = 0; i < N; i++) {
+  for (int i = 0; i < size; i++) {
     if (strcmp(abonents[i].name, name) == 0) {
       printf("Имя: %s, Фамилия: %s, Телефон: %s\n", abonents[i].name,
              abonents[i].second_name, abonents[i].tel);
@@ -111,11 +111,9 @@ void find_abonent(abonent* abonents) {
   }
 }
 
-void print_abonents(abonent* abonents) {
-  for (int i = 0; i < N; i++) {
-    if (abonents[i].name[0] != '\0') {
-      printf("Имя: %s, Фамилия: %s, Телефон: %s\n", abonents[i].name,
-             abonents[i].second_name, abonents[i].tel);
-    }
+void print_abonents(abonent* abonents, const int size) {
+  for (int i = 0; i < size; i++) {
+    printf("Имя: %s, Фамилия: %s, Телефон: %s\n", abonents[i].name,
+           abonents[i].second_name, abonents[i].tel);
   }
 }

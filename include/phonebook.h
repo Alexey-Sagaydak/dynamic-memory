@@ -1,10 +1,9 @@
 #ifndef PHONEBOOK_H
 #define PHONEBOOK_H
 
+#include <malloc.h>
 #include <stdio.h>
 #include <string.h>
-
-#define N 100
 
 typedef struct {
   char name[10];
@@ -15,12 +14,12 @@ typedef struct {
 void run();
 void print_menu();
 
-void init_abonents(abonent* abonents);
-int find_free_index(abonent* abonents);
+void realloc_memory(abonent** abonents, const int new_size);
+void free_memory(abonent** abonents);
 
-void add_abonent(abonent* abonents);
-void delete_abonent(abonent* abonents);
-void find_abonent(abonent* abonents);
-void print_abonents(abonent* abonents);
+void add_abonent(abonent** abonents, int* size);
+void delete_abonent(abonent** abonents, int* size);
+void find_abonent(abonent* abonents, const int size);
+void print_abonents(abonent* abonents, const int size);
 
 #endif  // PHONEBOOK_H
